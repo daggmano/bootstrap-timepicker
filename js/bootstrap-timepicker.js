@@ -29,6 +29,7 @@
     this.template = options.template;
     this.appendWidgetTo = options.appendWidgetTo;
     this.showWidgetOnAddonClick = options.showWidgetOnAddonClick;
+	this.allow2400 = options.allow2400;
 
     this._init();
   };
@@ -119,7 +120,11 @@
         }
       } else {
         if (this.hour <= 0) {
-          this.hour = 23;
+			if (this.allow2400 && this.minute === 0 && (!this.showSeconds || this.second === 0)) {
+				this.hour = 24;
+			} else {
+          		this.hour = 23;
+			}
         } else {
           this.hour--;
         }
@@ -141,6 +146,9 @@
       } else {
         this.minute = newVal;
       }
+		if (this.hour === 24) {
+			this.hour = 23;
+		}
     },
 
     decrementSecond: function() {
@@ -152,6 +160,9 @@
       } else {
         this.second = newVal;
       }
+		if (this.hour === 24) {
+			this.hour = 23;
+		}
     },
 
     elementKeydown: function(e) {
@@ -514,10 +525,18 @@
         }
       }
       if (this.hour === 23) {
-        this.hour = 0;
+		if (this.allow2400 && this.minute === 0 && (!this.showSeconds || this.second === 0)) {
+			this.hour = 24;
+		} else {
+	        this.hour = 0;
+		}
 
         return;
       }
+		if (this.hour === 24) {
+			this.hour = 0;
+			return;
+		}
       this.hour++;
     },
 
@@ -536,6 +555,9 @@
       } else {
         this.minute = newVal;
       }
+		if (this.hour === 24) {
+			this.hour = 0;
+		}
     },
 
     incrementSecond: function() {
@@ -547,6 +569,9 @@
       } else {
         this.second = newVal;
       }
+		if (this.hour === 24) {
+			this.hour = 0;
+		}
     },
 
     mousewheel: function(e) {
@@ -809,7 +834,7 @@
             hour = 12;
           }
         } else {
-          if (hour >= 24) {
+          if ((hour === 24 && !this.allow2400) || (hour > 24)) {
             hour = 23;
           } else if (hour < 0) {
             hour = 0;
@@ -819,6 +844,9 @@
           }
         }
 
+		if (hour === 24 && (minute !== 0 || (this.showSeconds && second !== 0))) {
+			hour = 0;
+		}
         if (minute < 0) {
           minute = 0;
         } else if (minute >= 60) {
@@ -1089,7 +1117,8 @@
     showMeridian: true,
     template: 'dropdown',
     appendWidgetTo: 'body',
-    showWidgetOnAddonClick: true
+    showWidgetOnAddonClick: true,
+	allow2400: false
   };
 
   $.fn.timepicker.Constructor = Timepicker;
